@@ -1,0 +1,50 @@
+<html>
+<head>
+  <title>Decode NG Mesh</title>
+</head>
+<body>
+  <!-- importing the automatically build module -->
+  <script src="../dist/ngmesher.js"></script>
+
+  <!-- The minified version is also accessible -->
+  <!-- <script src="../dist/edfdecoder.umd.min.js"></script> -->
+  Open NG Mesh file <input type="file" id="fileInput">
+  <p>Open Javascript console.</p>
+
+  <script>
+    var fileInput = document.getElementById('fileInput');
+
+    // event listener of the file dialog, it then triggers the file decoding
+    fileInput.addEventListener('change', function(e) {
+      var files = e.target.files;
+      var reader = new FileReader();
+
+      if( !files.length ){
+        return;
+      }
+
+      reader.onloadend = function(event) {
+        var buffer = event.target.result;
+        console.log(buffer);
+
+        let t0 = performance.now()
+        let meshData = ngmesher.decode(buffer)
+        let t1 = performance.now()
+        console.log(meshData);
+        console.log("Parsed in " + (t1-t0) + " ms.");
+
+        // reencode that into a buffer
+        let bufferOut = ngmesher.encode(meshData.vertices, meshData.triangles)
+        console.log(bufferOut);
+      }
+
+      reader.readAsArrayBuffer( files[0] );
+  	});
+
+
+
+
+  </script>
+
+</body>
+</html>
