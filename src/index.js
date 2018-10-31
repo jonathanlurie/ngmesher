@@ -1,3 +1,13 @@
+/**
+ * @param
+ * Extract a typed array from an ArrayBuffer.
+ * @param {ArrayBuffer} buffer - a buffer that contains some data
+ * @param {Number} byteOffset - the offset from which to read in buffer, in number of bytes
+ * @param {Function} arrayType - must NOT be an instance, but the object itself, such as `Float32Array`. This will be used as a constructor
+ * @param {Number} nbElements - number of elements to slice from the buffer
+ * @param {Boolean} littleEndian - if true, we are extracting the data from buffer in a little-endian fashion, if false, it will be with a big-endian fashion
+ * @return {Int8Array|Uint8Array|Int16Array|Uint16Array|Int32Array|Uint32Array|Float32Array|Float64Array} the array with data from the buffer
+ */
 function sliceTypedArray(buffer, byteOffset, arrayType, nbElements, littleEndian=true) {
   let array = new arrayType(nbElements)
   let bytesPerElements = array.BYTES_PER_ELEMENT
@@ -19,15 +29,16 @@ function sliceTypedArray(buffer, byteOffset, arrayType, nbElements, littleEndian
   for (let i=0; i<nbElements; i+=1) {
     array[i] = dataView[viewExtractMethod](byteOffset + i * bytesPerElements, littleEndian)
   }
-
   return array
 }
 
+
 /**
+ * @private
  * Insert the content of a typed array into a buffer. If the buffer if not large enough
  * to receive the array, an error is thown.
  * Nothing is returned, the buffer in arguments is modified on place.
- * @param {ArrayBuffer} buffer - a buffer
+ * @param {ArrayBuffer} buffer - a buffer to insert data
  * @param {Number} byteOffset - the byte positions to start writing the array data in the buffer
  * @param {Int8Array|Uint8Array|Int16Array|Uint16Array|Int32Array|Uint32Array|Float32Array|Float64Array} array - a typed array
  * @param {Boolean} littleEndian - will write in a little-endian fashion if true, or in a big-endian fashion if false
@@ -63,6 +74,12 @@ function insertTypedArray(buffer, byteOffset, array, littleEndian=true) {
 }
 
 
+/**
+ * Decode a buffer of a NG mesh file
+ * @return {Object} of the form {vertices: Float32Array, triangles: Uint32Array}
+ * where `vertices` is a array of vertices positions as [x0, y0, z0. x1, y1, z1, ...]
+ * and `triangles` is an array of vertex indices as triplet [a0, b0, c0, a1, b1, c1, ...]
+ */
 function decode (buffer) {
   // everything is little endian in the Neuroglancer mesh encoding
   let isLittleEndian = true
@@ -89,18 +106,19 @@ function decode (buffer) {
 /**
  * From a list of vertices and a list of triangles, create a binary buffer of a NG mesh file
  * @param {Float32Array} vertices - array of vertices positions as [x0, y0, z0. x1, y1, z1, ...]
- * @param {Uint32Array} triangles - 
+ * @param {Uint32Array} triangles - vertex indices as triplet [a0, b0, c0, a1, b1, c1, ...]
+ * @return {ArrayBuffer} the buffer with the binary content for a NG mesh file
  */
 function encode(vertices, triangles) {
   let verticesCompatible = vertices
   let trianglesCompatible = triangles
 
-  if (vertices.constructor !== Float32Array) {
+  if (!(vertices instanceof Float32Array)) {
     console.warn("Make sure your vertices array is float32 compatible.");
     verticesCompatible = new Float32Array(vertices)
   }
 
-  if (triangles.constructor !== Uint32Array) {
+  if (!(triangles instanceof Uint32Array)) {
     console.warn("Make sure your triangle array is uint32 compatible.");
     trianglesCompatible = new Uint32Array(triangles)
   }
@@ -120,8 +138,6 @@ function encode(vertices, triangles) {
 
   return buffer
 }
-
-
 
 export default ({
   decode,
