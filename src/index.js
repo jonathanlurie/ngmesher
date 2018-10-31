@@ -86,6 +86,11 @@ function decode (buffer) {
 }
 
 
+/**
+ * From a list of vertices and a list of triangles, create a binary buffer of a NG mesh file
+ * @param {Float32Array} vertices - array of vertices positions as [x0, y0, z0. x1, y1, z1, ...]
+ * @param {Uint32Array} triangles - 
+ */
 function encode(vertices, triangles) {
   let verticesCompatible = vertices
   let trianglesCompatible = triangles
