@@ -1,4 +1,4 @@
-#!/usr/bin/env node --inspect-brk
+#!/usr/bin/env node
 
 // !/usr/bin/env node --inspect-brk
 
@@ -48,7 +48,7 @@ function objToMeshData(pathObj) {
 }
 
 function stringToMatrix(matStr) {
-  const regex = /\[{1}\s*(\d+\.?\d*)\s*\,\s*(\d+\.?\d*)\s*\,\s*(\d+\.?\d*)\s*\,\s*(\d+\.?\d*)\s*\,\s*(\d+\.?\d*)\s*\,\s*(\d+\.?\d*)\s*\,\s*(\d+\.?\d*)\s*\,\s*(\d+\.?\d*)\s*\,\s*(\d+\.?\d*)\s*\,\s*(\d+\.?\d*)\s*\,\s*(\d+\.?\d*)\s*\,\s*(\d+\.?\d*)\s*\,\s*(\d+\.?\d*)\s*\,\s*(\d+\.?\d*)\s*\,\s*(\d+\.?\d*)\s*\,\s*(\d+\.?\d*)\s*\s*\]{1}/;
+  const regex = /\[{1}\s*(\-?\d+\.?\d*)\s*\,\s*(\-?\d+\.?\d*)\s*\,\s*(\-?\d+\.?\d*)\s*\,\s*(\-?\d+\.?\d*)\s*\,\s*(\-?\d+\.?\d*)\s*\,\s*(\-?\d+\.?\d*)\s*\,\s*(\-?\d+\.?\d*)\s*\,\s*(\-?\d+\.?\d*)\s*\,\s*(\-?\d+\.?\d*)\s*\,\s*(\-?\d+\.?\d*)\s*\,\s*(\-?\d+\.?\d*)\s*\,\s*(\-?\d+\.?\d*)\s*\,\s*(\-?\d+\.?\d*)\s*\,\s*(\-?\d+\.?\d*)\s*\,\s*(\-?\d+\.?\d*)\s*\,\s*(\-?\d+\.?\d*)\s*\s*\]{1}/;
 
   let match = regex.exec(matStr)
   let matrix = null
@@ -61,6 +61,26 @@ function stringToMatrix(matStr) {
   }
   return matrix
 }
+
+/**
+ * Apply an affine transformation on a vector. MODIFIES IN PLACE
+ * @param {Float32Array} v - the vector to modify, of shape [x, y, z]. Will be modified
+ * @param {Float32Array} m - inline 4x4 matrix in a column major fashion
+ */
+function affineTransform(v, m) {
+  let x = v[0], y = v[1], z = v[2], w = 1;
+  v[0] = m[0] * x + m[4] * y + m[8]  * z + m[12] * w;
+  v[1] = m[1] * x + m[5] * y + m[9]  * z + m[13] * w;
+  v[2] = m[2] * x + m[6] * y + m[10] * z + m[14] * w;
+}
+
+function applyMatrix (vertices, mat) {
+  for (let i=0; i<vertices.length; i+=3) {
+    let vector = vertices.subarray(i, i+3)
+    affineTransform(vector, mat)
+  }
+}
+
 
 
 /**
@@ -126,7 +146,7 @@ parser.addArgument(
 )
 
 var args = parser.parseArgs()
-console.log(args);
+//console.log(args);
 
 // quiting if no output is specified
 if (!args.out) {
@@ -143,10 +163,11 @@ if (args.obj) {
 // app,ying a transformation, if in arguments
 if (args.transformation) {
   let matrix = stringToMatrix(args.transformation)
-  console.log(matrix);
+  let verticesCopy = new Float32Array(meshData.vertices)
+  applyMatrix(meshData.vertices, matrix)
 }
 
-process.exit()
+//process.exit()
 
 
 // writing the mesh data in a NG mesh file

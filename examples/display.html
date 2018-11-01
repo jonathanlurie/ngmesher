@@ -121,6 +121,9 @@
       scene.add( new THREE.AmbientLight( 0x444444 ) );
       scene.add(camera)
 
+      var axesHelper = new THREE.AxesHelper( 100 );
+      scene.add( axesHelper );
+
       let light1 = new THREE.DirectionalLight( 0xffffff, 1 );
       light1.position.set( 0, 0, 0 );
       camera.add( light1 );
@@ -181,7 +184,7 @@
         side: THREE.DoubleSide,
         color:  Math.floor(Math.random() * 0xFFFFFF),
         transparent: true,
-        opacity: 0.8,
+        opacity: 0.1,
       } );
 
       let mesh = new THREE.Mesh( geometry, material );
@@ -189,7 +192,6 @@
 
       objectBox.expandByObject(mesh)
       boxBOundingSphere = objectBox.getBoundingSphere()
-
 
       camera.position.x = boxBOundingSphere.center.x + boxBOundingSphere.radius*4
       camera.position.y = boxBOundingSphere.center.y
